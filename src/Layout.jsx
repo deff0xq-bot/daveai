@@ -7,7 +7,7 @@ import { Toaster } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { t } from '../components/i18n';
+import { t } from './components/i18n';
 
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
