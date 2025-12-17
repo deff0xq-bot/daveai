@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Mic, MicOff, Paperclip, Image as ImageIcon, Video } from 'lucide-react';
+import { Send, Loader2, Mic, MicOff, Paperclip, Image as ImageIcon, Video, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ChatInterface({ projectId, project, onCodeGenerated, userCredits }) {
@@ -456,48 +456,95 @@ export default function ChatInterface({ projectId, project, onCodeGenerated, use
   };
 
   return (
-    <div className="h-full flex flex-col bg-black">
+    <div className="h-full flex flex-col bg-gradient-to-b from-black to-[#0a0a0a]">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
         {messages.length === 0 && !isLoading && (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-white rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-2xl">💬</span>
+            <div className="text-center space-y-4 animate-fade-in">
+              <div className="w-20 h-20 bg-gradient-to-br from-white to-gray-300 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-2xl transform hover:scale-110 transition-transform duration-300">
+                <Sparkles className="w-10 h-10 text-black" />
               </div>
-              <p className="text-gray-500 text-sm">Начните разговор с Dave AI</p>
+              <h3 className="text-xl font-bold text-white">Начните создавать с Dave AI</h3>
+              <p className="text-gray-500 text-sm max-w-md">Опишите, что вы хотите создать, и я помогу воплотить вашу идею в жизнь</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6 max-w-2xl">
+                <button
+                  onClick={() => setInput('Создай современный лендинг для стартапа')}
+                  className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-left transition-all hover:scale-105"
+                >
+                  <div className="text-white font-semibold mb-1">🚀 Лендинг</div>
+                  <div className="text-gray-500 text-xs">Создать страницу для стартапа</div>
+                </button>
+                <button
+                  onClick={() => setInput('Разработай интерактивную дашборд с графиками')}
+                  className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-left transition-all hover:scale-105"
+                >
+                  <div className="text-white font-semibold mb-1">📊 Dashboard</div>
+                  <div className="text-gray-500 text-xs">Панель с аналитикой</div>
+                </button>
+                <button
+                  onClick={() => setInput('Создай портфолио веб-дизайнера')}
+                  className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-left transition-all hover:scale-105"
+                >
+                  <div className="text-white font-semibold mb-1">🎨 Портфолио</div>
+                  <div className="text-gray-500 text-xs">Сайт-портфолио</div>
+                </button>
+                <button
+                  onClick={() => setInput('Разработай интернет-магазин товаров')}
+                  className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-left transition-all hover:scale-105"
+                >
+                  <div className="text-white font-semibold mb-1">🛍️ E-commerce</div>
+                  <div className="text-gray-500 text-xs">Магазин с корзиной</div>
+                </button>
+              </div>
             </div>
           </div>
         )}
-        
+
         {messages.map((msg, idx) => (
-          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
             {msg.role === 'assistant' && (
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                <span className="text-black text-xs font-bold">AI</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-white to-gray-200 rounded-xl flex items-center justify-center mr-3 flex-shrink-0 shadow-lg">
+                <Sparkles className="w-5 h-5 text-black" />
               </div>
             )}
-            <div className={`max-w-[80%] ${
+            <div className={`max-w-[85%] ${
               msg.role === 'user'
-                ? 'bg-white text-black rounded-2xl px-4 py-3'
-                : 'text-gray-300'
+                ? 'bg-white text-black rounded-2xl px-5 py-3.5 shadow-lg'
+                : 'bg-white/5 backdrop-blur-sm border border-white/10 text-gray-200 rounded-2xl px-5 py-3.5'
             }`}>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                 {msg.content}
-                {msg.streaming && <span className="animate-pulse ml-1">▋</span>}
+                {msg.streaming && <span className="animate-pulse ml-1 text-white">▋</span>}
               </p>
+              {msg.credits_used > 0 && (
+                <div className="mt-2 text-xs text-gray-500">
+                  Использовано: {msg.credits_used} {msg.credits_used === 1 ? 'кредит' : 'кредитов'}
+                </div>
+              )}
             </div>
+            {msg.role === 'user' && (
+              <div className="w-10 h-10 bg-gradient-to-br from-gray-700 to-gray-800 rounded-xl flex items-center justify-center ml-3 flex-shrink-0 shadow-lg">
+                <span className="text-white text-sm font-bold">Вы</span>
+              </div>
+            )}
           </div>
         ))}
-        
+
         {isLoading && (
-          <div className="flex items-start">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3">
-              <span className="text-black text-xs font-bold">AI</span>
+          <div className="flex items-start animate-fade-in">
+            <div className="w-10 h-10 bg-gradient-to-br from-white to-gray-200 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+              <Loader2 className="w-5 h-5 text-black animate-spin" />
             </div>
-            <div className="text-gray-500 text-sm flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Generating...
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-5 py-3.5">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+                <span className="text-gray-400 text-sm">Генерирую код...</span>
+              </div>
             </div>
           </div>
         )}
@@ -505,112 +552,134 @@ export default function ChatInterface({ projectId, project, onCodeGenerated, use
       </div>
 
       {/* Input */}
-      <div className="border-t border-white/10 p-4 bg-black">
-        <div className="mb-3 flex flex-wrap gap-2">
-          <button
-            onClick={() => setIsDiscussionMode(!isDiscussionMode)}
-            className={`text-xs px-4 py-2 rounded-lg font-medium transition-all ${
-              isDiscussionMode 
-                ? 'bg-white text-black' 
-                : 'bg-white/10 text-white hover:bg-white/20'
-            }`}
-          >
-            {isDiscussionMode ? 'Обсуждение' : 'Генерация'}
-          </button>
+      <div className="border-t border-white/10 bg-[#0a0a0a] backdrop-blur-xl">
+        <div className="p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap gap-2">
+            <button
+              onClick={() => setIsDiscussionMode(!isDiscussionMode)}
+              className={`text-xs px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 ${
+                isDiscussionMode
+                  ? 'bg-white text-black shadow-lg'
+                  : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+              }`}
+            >
+              {isDiscussionMode ? '💬 Обсуждение' : '⚡ Генерация'}
+            </button>
 
-          <select 
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-            className="hidden md:block bg-white/10 text-xs text-white px-3 py-2 rounded-lg border border-white/10 focus:outline-none cursor-pointer hover:bg-white/20"
-          >
-            <option value="deepseek" className="bg-black">DeepSeek</option>
-            <option value="sonnet-4.5" className="bg-black">Claude Sonnet</option>
-            <option value="opus-4.5" className="bg-black">Claude Opus</option>
-          </select>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="hidden md:block bg-white/10 text-xs text-white px-3 py-2 rounded-lg border border-white/10 focus:outline-none cursor-pointer hover:bg-white/20 transition-all font-medium"
+            >
+              <option value="deepseek" className="bg-black">DeepSeek</option>
+              <option value="sonnet-4.5" className="bg-black">Claude Sonnet</option>
+              <option value="opus-4.5" className="bg-black">Claude Opus</option>
+            </select>
 
-          <select 
-            value={fileType}
-            onChange={(e) => setFileType(e.target.value)}
-            className="hidden md:block bg-white/10 text-xs text-white px-3 py-2 rounded-lg border border-white/10 focus:outline-none cursor-pointer hover:bg-white/20"
-          >
-            <option value="html" className="bg-black">HTML</option>
-            <option value="react" className="bg-black">React</option>
-            <option value="vue" className="bg-black">Vue</option>
-          </select>
+            <select
+              value={fileType}
+              onChange={(e) => setFileType(e.target.value)}
+              className="hidden md:block bg-white/10 text-xs text-white px-3 py-2 rounded-lg border border-white/10 focus:outline-none cursor-pointer hover:bg-white/20 transition-all font-medium"
+            >
+              <option value="html" className="bg-black">HTML</option>
+              <option value="react" className="bg-black">React</option>
+              <option value="vue" className="bg-black">Vue</option>
+            </select>
 
-          {attachedFiles.length > 0 && (
-            <div className="text-xs text-white flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg">
-              <Paperclip className="w-3 h-3" />
-              {attachedFiles.length}
-            </div>
-          )}
-        </div>
-        
-        <div className="flex items-end gap-2">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex-shrink-0 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all"
-          >
-            <Paperclip className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setInput('Сгенерируй изображение: ')}
-            className="flex-shrink-0 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all"
-            title="Генерация изображения"
-          >
-            <ImageIcon className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setInput('Создай видео: ')}
-            className="flex-shrink-0 p-2 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 transition-all"
-            title="Генерация видео (10 кредитов)"
-          >
-            <Video className="w-5 h-5" />
-          </button>
-          <button
-            onClick={toggleRecording}
-            className={`flex-shrink-0 p-2 rounded-lg transition-all ${
-              isRecording 
-                ? 'bg-white text-black' 
-                : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-          >
-            {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          </button>
-          
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileAttach}
-            className="hidden"
-            multiple
-          />
-          
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Что вы хотите создать?"
-            className="flex-1 bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-500 focus:border-white/30 resize-none rounded-lg py-3 px-4 min-h-[52px]"
-            rows={1}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-          />
+            <select
+              value={complexity}
+              onChange={(e) => setComplexity(e.target.value)}
+              className="hidden sm:block bg-white/10 text-xs text-white px-3 py-2 rounded-lg border border-white/10 focus:outline-none cursor-pointer hover:bg-white/20 transition-all font-medium"
+            >
+              <option value="simple" className="bg-black">Простой</option>
+              <option value="standard" className="bg-black">Стандарт</option>
+              <option value="advanced" className="bg-black">Продвинутый</option>
+            </select>
 
-          <button
-            onClick={handleSend}
-            disabled={isLoading || !input.trim()}
-            className="flex-shrink-0 p-2 rounded-lg bg-white hover:bg-gray-300 text-black disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-          >
-            <Send className="w-5 h-5" />
-          </button>
-        </div>
-        
-        <div className="mt-3 text-xs text-gray-600 text-center">
-          {isDiscussionMode ? 'Режим обсуждения - бесплатно' : 'Генерация: 1 кредит'}
+            {attachedFiles.length > 0 && (
+              <div className="text-xs text-white flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg border border-white/10">
+                <Paperclip className="w-3 h-3" />
+                <span className="font-medium">{attachedFiles.length} файл(а)</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-end gap-2 bg-white/5 border border-white/10 rounded-xl p-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-shrink-0 p-2.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+              title="Прикрепить файлы"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setInput('Сгенерируй изображение: ')}
+              className="flex-shrink-0 p-2.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+              title="Генерация изображения (5 кредитов)"
+            >
+              <ImageIcon className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setInput('Создай видео: ')}
+              className="flex-shrink-0 p-2.5 rounded-lg hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 transition-all"
+              title="Генерация видео (10 кредитов)"
+            >
+              <Video className="w-5 h-5" />
+            </button>
+            <button
+              onClick={toggleRecording}
+              className={`flex-shrink-0 p-2.5 rounded-lg transition-all ${
+                isRecording
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : 'hover:bg-white/10 text-gray-400 hover:text-white'
+              }`}
+              title="Голосовой ввод"
+            >
+              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </button>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileAttach}
+              className="hidden"
+              multiple
+            />
+
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Опишите, что хотите создать..."
+              className="flex-1 bg-transparent border-0 text-white text-sm placeholder:text-gray-600 focus:outline-none focus-visible:ring-0 resize-none py-3 px-2 min-h-[52px]"
+              rows={1}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+            />
+
+            <button
+              onClick={handleSend}
+              disabled={isLoading || !input.trim()}
+              className="flex-shrink-0 p-3 rounded-lg bg-white hover:bg-gray-200 text-black disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95 shadow-lg"
+              title="Отправить"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between text-xs">
+            <span className="text-gray-600">
+              {isDiscussionMode ? '💬 Режим обсуждения - бесплатно' : '⚡ Генерация: 1 кредит'}
+            </span>
+            {userCredits !== undefined && (
+              <span className="text-gray-500 font-medium">
+                Баланс: <span className="text-white">{userCredits}</span> кредитов
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>

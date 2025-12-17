@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Sparkles, ArrowRight, Paperclip, Layout } from 'lucide-react';
+import { Sparkles, ArrowRight, Paperclip, Layout, Loader2 } from 'lucide-react';
 import AnimatedPlaceholder from '../components/AnimatedPlaceholder';
 import TemplateSelector from '../components/TemplateSelector';
 
@@ -152,57 +152,83 @@ export default function Home() {
 
           {/* Input Box */}
           <div className="max-w-3xl mx-auto px-2 sm:px-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg sm:rounded-xl overflow-hidden shadow-2xl hover:shadow-white/10 transition-all hover:scale-[1.01]">
-              <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 p-2 sm:p-2.5 md:p-4">
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-2 rounded hover:bg-white/10 transition-all"
-                >
-                  <Paperclip className="w-5 h-5 text-gray-500" />
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileAttach}
-                  className="hidden"
-                  multiple
-                />
-                <Input
-                  placeholder=""
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  className="flex-1 bg-transparent border-0 text-xs sm:text-sm md:text-base text-white placeholder:text-gray-600 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[40px]"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && prompt.trim() && !isCreating) {
-                      e.preventDefault();
-                      createNewProject();
-                    }
-                  }}
-                />
-                {!prompt && (
-                  <div className="absolute left-12 sm:left-14 md:left-20 pointer-events-none text-xs sm:text-sm md:text-base text-gray-600">
-                    <AnimatedPlaceholder />
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-[1.02]">
+              <div className="flex flex-col gap-3 p-3 sm:p-4 md:p-5">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-shrink-0 p-2.5 rounded-lg hover:bg-white/10 transition-all group"
+                    title="Прикрепить файлы"
+                  >
+                    <Paperclip className="w-5 h-5 text-gray-500 group-hover:text-white transition-colors" />
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileAttach}
+                    className="hidden"
+                    multiple
+                  />
+                  <div className="flex-1 relative">
+                    <Input
+                      placeholder=""
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      className="bg-transparent border-0 text-sm sm:text-base md:text-lg text-white placeholder:text-gray-600 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[48px] px-0"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && prompt.trim() && !isCreating) {
+                          e.preventDefault();
+                          createNewProject();
+                        }
+                      }}
+                    />
+                    {!prompt && (
+                      <div className="absolute left-0 top-3 pointer-events-none text-sm sm:text-base md:text-lg text-gray-600">
+                        <AnimatedPlaceholder />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {attachedFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {attachedFiles.map((file, idx) => (
+                      <div key={idx} className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg text-xs text-white">
+                        <Paperclip className="w-3 h-3" />
+                        <span>{file.name}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
-                <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
-                  <select className="hidden sm:block bg-white/10 text-sm text-white px-3 py-2 rounded-lg border border-white/20 focus:outline-none cursor-pointer hover:bg-white/20 transition-colors">
+
+                <div className="flex items-center justify-between gap-2">
+                  <select className="bg-white/10 text-xs sm:text-sm text-white px-3 py-2 rounded-lg border border-white/20 focus:outline-none cursor-pointer hover:bg-white/20 transition-colors">
                     <option value="deepseek" className="bg-black">DeepSeek</option>
                     <option value="sonnet-4.5" className="bg-black">Claude Sonnet 4.5</option>
                     <option value="opus-4.5" className="bg-black">Claude Opus 4.5</option>
                   </select>
+
                   <Button
                     onClick={createNewProject}
                     disabled={!prompt.trim() || isCreating}
-                    className="bg-white hover:bg-gray-200 text-black px-4 md:px-6 py-2 rounded-lg font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap shadow-lg"
+                    className="bg-white hover:bg-gray-200 text-black px-6 py-2.5 rounded-lg font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2 shadow-lg"
                   >
-                    <span className="hidden sm:inline">{isCreating ? 'Создание...' : 'Создать сейчас'}</span>
-                    <span className="sm:hidden">{isCreating ? '...' : 'Создать'}</span>
-                    {!isCreating && <ArrowRight className="w-4 h-4 ml-1" />}
+                    {isCreating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Создание...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Создать приложение</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
             </div>
-            </div>
+          </div>
 
             {/* Template Selector Modal */}
             {showTemplates && (
