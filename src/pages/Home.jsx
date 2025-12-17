@@ -5,6 +5,7 @@ import { createPageUrl } from '../utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Sparkles, ArrowRight, Paperclip, Layout, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import AnimatedPlaceholder from '../components/AnimatedPlaceholder';
 import TemplateSelector from '../components/TemplateSelector';
 
@@ -33,20 +34,23 @@ export default function Home() {
 
     setIsCreating(true);
     try {
-      // Генерируем название проекта с помощью AI
-      const projectName = await base44.integrations.Core.InvokeLLM({
-        prompt: `Создай короткое название проекта (2-4 слова) на основе этого описания: "${prompt}". Верни ТОЛЬКО название без кавычек и дополнительного текста.`,
-        add_context_from_internet: false
-      });
+      const user = await base44.auth.me();
+
+      const projectName = `Project ${Date.now()}`;
 
       const project = await base44.entities.Project.create({
-        name: projectName.trim(),
+        user_email: user.email,
+        name: projectName,
         description: prompt,
         status: 'draft',
         files: attachedFiles
       });
 
+      console.log('Created project:', project);
       navigate(createPageUrl(`Editor?id=${project.id}`));
+    } catch (error) {
+      console.error('Error creating project:', error);
+      toast.error('Ошибка создания проекта: ' + error.message);
     } finally {
       setIsCreating(false);
     }

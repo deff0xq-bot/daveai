@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Mic, MicOff, Paperclip, Image as ImageIcon, Video, Sparkles } from 'lucide-react';
+import { Send, Loader2, Mic, MicOff, Paperclip, Image as ImageIcon, Video, Sparkles, Rocket, BarChart3, Palette, ShoppingCart, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ChatInterface({ projectId, project, onCodeGenerated, userCredits }) {
@@ -472,28 +472,40 @@ export default function ChatInterface({ projectId, project, onCodeGenerated, use
                   onClick={() => setInput('Создай современный лендинг для стартапа')}
                   className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-left transition-all hover:scale-105"
                 >
-                  <div className="text-white font-semibold mb-1">🚀 Лендинг</div>
+                  <div className="text-white font-semibold mb-1 flex items-center gap-2">
+                    <Rocket className="w-4 h-4" />
+                    Лендинг
+                  </div>
                   <div className="text-gray-500 text-xs">Создать страницу для стартапа</div>
                 </button>
                 <button
                   onClick={() => setInput('Разработай интерактивную дашборд с графиками')}
                   className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-left transition-all hover:scale-105"
                 >
-                  <div className="text-white font-semibold mb-1">📊 Dashboard</div>
+                  <div className="text-white font-semibold mb-1 flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Dashboard
+                  </div>
                   <div className="text-gray-500 text-xs">Панель с аналитикой</div>
                 </button>
                 <button
                   onClick={() => setInput('Создай портфолио веб-дизайнера')}
                   className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-left transition-all hover:scale-105"
                 >
-                  <div className="text-white font-semibold mb-1">🎨 Портфолио</div>
+                  <div className="text-white font-semibold mb-1 flex items-center gap-2">
+                    <Palette className="w-4 h-4" />
+                    Портфолио
+                  </div>
                   <div className="text-gray-500 text-xs">Сайт-портфолио</div>
                 </button>
                 <button
                   onClick={() => setInput('Разработай интернет-магазин товаров')}
                   className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-left transition-all hover:scale-105"
                 >
-                  <div className="text-white font-semibold mb-1">🛍️ E-commerce</div>
+                  <div className="text-white font-semibold mb-1 flex items-center gap-2">
+                    <ShoppingCart className="w-4 h-4" />
+                    E-commerce
+                  </div>
                   <div className="text-gray-500 text-xs">Магазин с корзиной</div>
                 </button>
               </div>
@@ -557,13 +569,23 @@ export default function ChatInterface({ projectId, project, onCodeGenerated, use
           <div className="mb-3 flex flex-wrap gap-2">
             <button
               onClick={() => setIsDiscussionMode(!isDiscussionMode)}
-              className={`text-xs px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 ${
+              className={`text-xs px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 flex items-center gap-1.5 ${
                 isDiscussionMode
                   ? 'bg-white text-black shadow-lg'
                   : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
               }`}
             >
-              {isDiscussionMode ? '💬 Обсуждение' : '⚡ Генерация'}
+              {isDiscussionMode ? (
+                <>
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Обсуждение
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Генерация
+                </>
+              )}
             </button>
 
             <select
@@ -671,8 +693,18 @@ export default function ChatInterface({ projectId, project, onCodeGenerated, use
           </div>
 
           <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="text-gray-600">
-              {isDiscussionMode ? '💬 Режим обсуждения - бесплатно' : '⚡ Генерация: 1 кредит'}
+            <span className="text-gray-600 flex items-center gap-1.5">
+              {isDiscussionMode ? (
+                <>
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Режим обсуждения - бесплатно
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Генерация: 1 кредит
+                </>
+              )}
             </span>
             {userCredits !== undefined && (
               <span className="text-gray-500 font-medium">

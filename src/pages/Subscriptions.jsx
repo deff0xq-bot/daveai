@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Check, X, Crown, Zap, Rocket, ArrowRight, Sparkles } from 'lucide-react';
+import { Check, X, Crown, Zap, Rocket, ArrowRight, Sparkles, Gem, CreditCard, Building2, Lock, Bolt, Award, Target, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -121,27 +121,15 @@ export default function Subscriptions() {
 
     try {
       setProcessing(true);
-      
+
       const tonAmount = PLANS[selectedPlan].price_ton;
       const nanotons = Math.floor(tonAmount * 1e9);
 
-      // Создаем ссылку для оплаты TON
-      const tonLink = `ton://transfer/${TON_WALLET_ADDRESS}?amount=${nanotons}&text=DaveAI_${selectedPlan}_${user.email}`;
-      
-      // Пытаемся открыть через TON Connect
-      if (window.TonConnect) {
-        const connector = new window.TonConnect();
-        await connector.sendTransaction({
-          to: TON_WALLET_ADDRESS,
-          value: nanotons.toString(),
-          comment: `Dave AI ${PLANS[selectedPlan].name} subscription - ${user.email}`
-        });
-      } else {
-        // Открываем универсальную ссылку
-        window.open(tonLink, '_blank');
-      }
+      const tonLink = `https://app.tonkeeper.com/transfer/${TON_WALLET_ADDRESS}?amount=${nanotons}&text=DaveAI_${selectedPlan}_${user.email}`;
 
-      // Имитируем успешную транзакцию для демо (в реальности нужен webhook)
+      toast.info('Открываю Tonkeeper для оплаты...');
+      window.open(tonLink, '_blank');
+
       setTimeout(async () => {
         const expiresAt = new Date();
         expiresAt.setMonth(expiresAt.getMonth() + 1);
@@ -159,7 +147,9 @@ export default function Subscriptions() {
           await base44.auth.updateMe({ has_unlimited_credits: true });
         }
 
-        toast.success('✅ Подписка активирована!');
+        toast.success('Подписка активирована!', {
+          icon: <Check className="w-4 h-4" />
+        });
         setPaymentDialog(false);
         loadUserData();
         setProcessing(false);
@@ -167,7 +157,7 @@ export default function Subscriptions() {
 
     } catch (error) {
       console.error('TON payment error:', error);
-      toast.error('Ошибка оплаты');
+      toast.error('Ошибка оплаты. Попробуйте еще раз.');
       setProcessing(false);
     }
   };
@@ -227,8 +217,9 @@ export default function Subscriptions() {
                 } ${isActive ? 'ring-2 ring-white' : ''}`}>
                   
                   {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-white text-black px-4 py-1 rounded-full text-xs md:text-sm font-bold shadow-lg">
-                      🔥 Популярный
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-white text-black px-4 py-1 rounded-full text-xs md:text-sm font-bold shadow-lg flex items-center gap-1.5">
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      Популярный
                     </div>
                   )}
 
@@ -307,11 +298,20 @@ export default function Subscriptions() {
 
         {/* Trust Badges */}
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '400ms' }}>
-          {['🔒 Безопасно', '⚡ Мгновенно', '💎 Качество', '🎯 Поддержка'].map((badge, idx) => (
-            <div key={idx} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4 text-center text-gray-400 hover:border-[#3a3a3a] transition-all hover:scale-105">
-              {badge}
-            </div>
-          ))}
+          {[
+            { icon: Lock, text: 'Безопасно' },
+            { icon: Bolt, text: 'Мгновенно' },
+            { icon: Award, text: 'Качество' },
+            { icon: Target, text: 'Поддержка' }
+          ].map((badge, idx) => {
+            const Icon = badge.icon;
+            return (
+              <div key={idx} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4 text-center text-gray-400 hover:border-[#3a3a3a] transition-all hover:scale-105">
+                <Icon className="w-5 h-5 mx-auto mb-2" />
+                <span className="text-sm">{badge.text}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -336,8 +336,8 @@ export default function Subscriptions() {
                 className="group relative w-full p-4 bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/30 rounded-xl transition-all hover:scale-105 active:scale-95 text-left overflow-hidden before:absolute before:inset-[-100px] before:rounded-xl"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                    💎
+                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Gem className="w-6 h-6 text-black" />
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-white mb-1">Криптовалюта (TON)</div>
@@ -354,8 +354,8 @@ export default function Subscriptions() {
                 className="group relative w-full p-4 bg-[#2a2a2a] hover:bg-[#3a3a3a] border-2 border-[#3a3a3a] rounded-xl transition-all hover:scale-105 active:scale-95 text-left overflow-hidden before:absolute before:inset-[-100px] before:rounded-xl"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[#3a3a3a] rounded-xl flex items-center justify-center text-2xl">
-                    💳
+                  <div className="w-12 h-12 bg-[#3a3a3a] rounded-xl flex items-center justify-center">
+                    <CreditCard className="w-6 h-6 text-gray-400" />
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-white mb-1">Иностранные карты</div>
@@ -370,8 +370,8 @@ export default function Subscriptions() {
                 className="group relative w-full p-4 bg-[#2a2a2a] hover:bg-[#3a3a3a] border-2 border-[#3a3a3a] rounded-xl transition-all hover:scale-105 active:scale-95 text-left overflow-hidden before:absolute before:inset-[-100px] before:rounded-xl"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-[#3a3a3a] rounded-xl flex items-center justify-center text-2xl">
-                    🏦
+                  <div className="w-12 h-12 bg-[#3a3a3a] rounded-xl flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-gray-400" />
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-white mb-1">Российские карты</div>
