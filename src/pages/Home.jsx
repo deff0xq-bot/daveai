@@ -8,6 +8,7 @@ import { Sparkles, ArrowRight, Paperclip, Layout, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import AnimatedPlaceholder from '../components/AnimatedPlaceholder';
 import TemplateSelector from '../components/TemplateSelector';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function Home() {
   const [prompt, setPrompt] = useState('');
@@ -16,26 +17,35 @@ export default function Home() {
   const [isCreating, setIsCreating] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const { user, isAuthenticated, isLoadingAuth } = useAuth();
 
   const handleFileAttach = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    const uploadedFiles = [];
-    for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      uploadedFiles.push({ name: file.name, url: file_url });
+    try {
+      const uploadedFiles = [];
+      for (const file of files) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        uploadedFiles.push({ name: file.name, url: file_url });
+      }
+      setAttachedFiles([...attachedFiles, ...uploadedFiles]);
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      toast.error('Ошибка загрузки файлов: ' + error.message);
     }
-    setAttachedFiles([...attachedFiles, ...uploadedFiles]);
   };
 
   const createNewProject = async () => {
     if (!prompt.trim()) return;
 
+    if (!isAuthenticated || !user) {
+      toast.error('Подождите, идет авторизация...');
+      return;
+    }
+
     setIsCreating(true);
     try {
-      const user = await base44.auth.me();
-
       const projectName = `Project ${Date.now()}`;
 
       const project = await base44.entities.Project.create({
@@ -57,17 +67,28 @@ export default function Home() {
   };
 
   const handleTemplateSelect = async (template, htmlCode) => {
-    const project = await base44.entities.Project.create({
-      name: template.name,
-      description: template.description || '',
-      status: 'ready',
-      code: htmlCode,
-      html_preview: htmlCode,
-      files: []
-    });
+    if (!isAuthenticated || !user) {
+      toast.error('Подождите, идет авторизация...');
+      return;
+    }
 
-    setShowTemplates(false);
-    navigate(createPageUrl(`Editor?id=${project.id}`));
+    try {
+      const project = await base44.entities.Project.create({
+        user_email: user.email,
+        name: template.name,
+        description: template.description || '',
+        status: 'ready',
+        code: htmlCode,
+        html_preview: htmlCode,
+        files: []
+      });
+
+      setShowTemplates(false);
+      navigate(createPageUrl(`Editor?id=${project.id}`));
+    } catch (error) {
+      console.error('Error creating project from template:', error);
+      toast.error('Ошибка создания проекта: ' + error.message);
+    }
   };
 
   return (
@@ -146,11 +167,22 @@ export default function Home() {
           <div className="flex items-center justify-center gap-2 sm:gap-3 px-2 sm:px-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <button
               onClick={() => setShowTemplates(true)}
-              className="flex items-center gap-2 px-4 md:px-6 py-2 bg-white hover:bg-gray-200 text-black rounded-xl transition-all hover:scale-105 text-sm font-bold shadow-lg"
+              disabled={isLoadingAuth}
+              className="flex items-center gap-2 px-4 md:px-6 py-2 bg-white hover:bg-gray-200 text-black rounded-xl transition-all hover:scale-105 text-sm font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Layout className="w-4 h-4" />
-              <span className="hidden xs:inline">Начать с шаблона</span>
-              <span className="xs:hidden">Шаблон</span>
+              {isLoadingAuth ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="hidden xs:inline">Загрузка...</span>
+                  <span className="xs:hidden">...</span>
+                </>
+              ) : (
+                <>
+                  <Layout className="w-4 h-4" />
+                  <span className="hidden xs:inline">Начать с шаблона</span>
+                  <span className="xs:hidden">Шаблон</span>
+                </>
+              )}
             </button>
           </div>
 
@@ -214,10 +246,15 @@ export default function Home() {
 
                   <Button
                     onClick={createNewProject}
-                    disabled={!prompt.trim() || isCreating}
+                    disabled={!prompt.trim() || isCreating || isLoadingAuth}
                     className="bg-white hover:bg-gray-200 text-black px-6 py-2.5 rounded-lg font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2 shadow-lg"
                   >
-                    {isCreating ? (
+                    {isLoadingAuth ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Загрузка...</span>
+                      </>
+                    ) : isCreating ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
                         <span>Создание...</span>
