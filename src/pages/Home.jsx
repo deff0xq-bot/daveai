@@ -17,7 +17,7 @@ export default function Home() {
   const [isCreating, setIsCreating] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoadingAuth } = useAuth();
+  const { user, isAuthenticated, isLoadingAuth, authError } = useAuth();
 
   const handleFileAttach = async (e) => {
     const files = Array.from(e.target.files);
@@ -164,7 +164,7 @@ export default function Home() {
           </p>
 
           {/* Quick Start with Templates */}
-          <div className="flex items-center justify-center gap-2 sm:gap-3 px-2 sm:px-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="flex flex-col items-center justify-center gap-2 sm:gap-3 px-2 sm:px-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <button
               onClick={() => setShowTemplates(true)}
               disabled={isLoadingAuth}
@@ -184,6 +184,12 @@ export default function Home() {
                 </>
               )}
             </button>
+
+            {authError && (
+              <div className="bg-red-900/20 border border-red-500/50 text-red-300 px-4 py-2 rounded-lg text-xs">
+                Ошибка авторизации: {authError.message}. Проверьте консоль для деталей.
+              </div>
+            )}
           </div>
 
           {/* Input Box */}

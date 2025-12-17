@@ -35,6 +35,7 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
 
     let userEmail: string;
+    let password: string;
 
     if (existingIp) {
       userEmail = existingIp.user_email;
@@ -43,9 +44,40 @@ Deno.serve(async (req: Request) => {
         .from('user_ip_addresses')
         .update({ last_seen: new Date().toISOString() })
         .eq('ip_address', clientIp);
+      
+      const { data: userData } = await supabase.auth.admin.listUsers();
+      const user = userData.users.find(u => u.email === userEmail);
+      
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const { data: sessionData, error: tokenError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email: userEmail,
+      });
+
+      if (tokenError) {
+        throw tokenError;
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          email: userEmail,
+          access_token: sessionData.properties.access_token,
+          refresh_token: sessionData.properties.refresh_token,
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
     } else {
       userEmail = `user_${clientIp.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}@auto-login.local`;
-      const password = crypto.randomUUID();
+      password = crypto.randomUUID();
 
       const { data: authData, error: signUpError } = await supabase.auth.admin.createUser({
         email: userEmail,
@@ -71,37 +103,38 @@ Deno.serve(async (req: Request) => {
             created_by: 'auto-login'
           }
         });
-    }
 
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: userEmail
-    });
-
-    if (sessionError) {
-      throw sessionError;
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
+      const { data: sessionData, error: tokenError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
         email: userEmail,
-        access_token: sessionData.properties?.access_token,
-        refresh_token: sessionData.properties?.refresh_token
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+      });
+
+      if (tokenError) {
+        throw tokenError;
       }
-    );
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          email: userEmail,
+          access_token: sessionData.properties.access_token,
+          refresh_token: sessionData.properties.refresh_token,
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
   } catch (error) {
     console.error('Auto-login error:', error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        success: false
+        success: false,
+        details: error.toString()
       }),
       {
         status: 500,
